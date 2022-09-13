@@ -38,4 +38,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    host: true,
+    port: 8082,
+    https: false,
+    open: true, //在服务器启动时自动在浏览器中打开应用程序
+  },
 });

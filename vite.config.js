@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import eslintPlugin from 'vite-plugin-eslint';
 import Unocss from 'unocss/vite';
 import { presetUno, presetAttributify } from 'unocss';
+import transformerDirective from '@unocss/transformer-directives';
 export default defineConfig({
   plugins: [
     vue(),
@@ -29,10 +30,13 @@ export default defineConfig({
       shortcuts: {
         'init-btn': 'border-none cursor-pointer outline-none',
         'space-between': 'flex flex-row justify-between items-center',
+        'space-between-nocenter': 'flex flex-row justify-between',
         'flex-start': 'flex flex-row justify-start items-center',
+        'flex-start-nocenter': 'flex flex-row justify-start',
       },
     }),
   ],
+  transformers: [transformerDirective()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

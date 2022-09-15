@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useEncode, getPreviewPic, useDecode } from './js/index';
+import { useEncode, getPreviewPic, useDecode, base64ToBlobUrl } from './js/index';
 let encodeContent = ref();
 let decodeContent = ref();
 let imgSrc = ref();
@@ -45,6 +45,7 @@ const previewImg = ref(null);
 // 将文字加密到图片中
 const encodePic = () => {
   encodeImgSrc.value = useEncode(encodeContent.value, previewImg.value);
+  console.log(encodeImgSrc.value);
 };
 
 // 解密图片
@@ -52,9 +53,9 @@ const decodePic = () => {
   decodeContent.value = useDecode(previewImg.value);
 };
 
-// 下载图片
+// // 下载图片
 const computedHref = computed(() => {
-  return encodeImgSrc.value.replace('image/png', 'image/octet-stream');
+  return base64ToBlobUrl(encodeImgSrc.value);
 });
 
 // 获取上传的图片base64

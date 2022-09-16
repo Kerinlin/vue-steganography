@@ -6,4 +6,5 @@ import 'uno.css';
 import '@unocss/reset/tailwind.css';
 import '@/style/index.scss';
 import '@/utils/index.js';
-createApp(App).use(store).use(router).mount('#app');
+import Notifications from '@kyvg/vue3-notification';
+createApp(App).use(store).use(router).use(Notifications).mount('#app');

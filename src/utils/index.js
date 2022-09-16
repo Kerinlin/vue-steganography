@@ -3,7 +3,12 @@ export function getPreviewPic(event) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => {
+      resolve({
+        file,
+        imgSrc: reader.result,
+      });
+    };
     reader.onerror = error => reject(error);
   });
 }
@@ -23,6 +28,49 @@ export function base64ToBlobUrl(code) {
   return blobUrl;
 }
 
+export function genarateImageFromBase64(imageData) {
+  let img = new Image();
+  return new Promise((resolve, reject) => {
+    img.onload = function () {
+      console.log('height', img.height);
+      console.log('width', img.width);
+      resolve(img);
+    };
+    img.onerror = err => reject(err);
+    img.src = imageData;
+  });
+}
+
+/**
+ * [formatFile 格式化文件大小]
+ * @param  {[int]} total [文件大小]
+ * @param  {[int]} n     [total参数的原始单位如果为Byte，则n设为1，如果为kb，则n设为2，如果为mb，则n设为3，以此类推]
+ * @return {[string]}       [带单位的文件大小的字符串]
+ */
+export function formatFile(total, n = 1) {
+  let format;
+  let len = total / 1000.0;
+  if (len > 1000) {
+    return arguments.callee(len, ++n);
+  } else {
+    switch (n) {
+      case 1:
+        format = len.toFixed(2) + 'KB';
+        break;
+      case 2:
+        format = len.toFixed(2) + 'MB';
+        break;
+      case 3:
+        format = len.toFixed(2) + 'GB';
+        break;
+      case 4:
+        format = len.toFixed(2) + 'TB';
+        break;
+    }
+    return format;
+  }
+}
+
 // returns a 1 or 0 for the bit in 'location'
 function getBit(number, location) {
   return (number >> location) & 1;
@@ -31,7 +79,7 @@ function getBit(number, location) {
 // returns an array of 1s and 0s for a 2-byte number
 function getBitsFromNumber(number) {
   let bits = [];
-  for (var i = 0; i < 16; i++) {
+  for (let i = 0; i < 16; i++) {
     bits.push(getBit(number, i));
   }
   return bits;

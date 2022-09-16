@@ -1,21 +1,18 @@
 <template>
-  <div>
-    <div class="upload">
-      <label for="uploadPic">上传图片</label>
-      <input id="file" type="file" name="uploadPic" accept="image/jpeg, image/png" @change="previewFiles" />
-    </div>
-    <div class="preview-wrapper space-between mt-10">
+  <div class="top-content">
+    <upload @upload-data="getUploadData"></upload>
+    <div v-if="imgSrc" class="preview-wrapper space-between mt-15">
       <div class="left-wrapper flex-start">
         <div class="img-wrapper mr-20">
-          <img ref="previewImg" src="../../assets/bg.jpg" />
+          <img ref="previewImg" :src="imgSrc" />
         </div>
         <div class="img-info">
-          <p class="name">xxxx</p>
-          <p class="size">xxxx</p>
+          <p class="name">{{ file.name }}</p>
+          <p class="size">{{ computedFileSize }}</p>
         </div>
       </div>
       <div class="right-wrapper">
-        <div class="operation-item">
+        <div class="operation-item" @click="deleteFile">
           <svg
             t="1663315688719"
             class="icon"
@@ -37,46 +34,78 @@
       </div>
     </div>
 
-    <canvas id="canvas" ref="canvas" class="hide"></canvas>
+    <div v-if="encodeImgSrc" class="preview-wrapper space-between mt-15">
+      <div class="left-wrapper flex-start">
+        <div class="img-wrapper mr-20">
+          <img ref="previewImg" :src="encodeImgSrc" />
+        </div>
+        <div class="img-info">
+          <p class="name">点击下载加密后的图片</p>
+          <p class="name">encode-{{ file.name }}</p>
+        </div>
+      </div>
+      <div class="right-wrapper">
+        <a class="operation-item" :href="computedHref" :download="`encode-${file.name}`" rel="nofollow">
+          <svg
+            t="1663341847822"
+            class="icon"
+            viewBox="0 0 1024 1024"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            p-id="2450"
+            width="20"
+            height="20"
+          >
+            <path
+              d="M498.346667 824.32L201.386667 527.36c-11.946667-11.946667-3.413333-34.133333 13.653333-34.133333H375.466667c11.946667 0 20.48-8.533333 20.48-20.48V54.613333c0-11.946667 8.533333-20.48 20.48-20.48h189.44c11.946667 0 20.48 8.533333 20.48 20.48v418.133334c0 11.946667 8.533333 20.48 20.48 20.48h160.426666c18.773333 0 27.306667 22.186667 13.653334 34.133333L525.653333 824.32c-6.826667 6.826667-20.48 6.826667-27.306666 0zM916.48 989.866667H107.52c-18.773333 0-35.84-15.36-35.84-35.84 0-18.773333 15.36-35.84 35.84-35.84h810.666667c18.773333 0 35.84 15.36 35.84 35.84-1.706667 20.48-17.066667 35.84-37.546667 35.84z"
+              p-id="2451"
+            ></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="encode-message mt-15">
+      <textarea v-model="encodeContent" placeholder="请输入加密信息" class="content"></textarea>
+      <input v-model="password" placeholder="请输入密码(可选)" type="password" class="password mt-10" />
+    </div>
   </div>
+
+  <div class="btn-wrapper" @click="encodePic">
+    <button>加密</button>
+  </div>
+
+  <canvas id="canvas" ref="canvas" class="hide"></canvas>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import { getPreviewPic, base64ToBlobUrl, encodeMessage, decodeMessage } from '@/utils/index';
-let encodeContent = ref();
-let decodeContent = ref();
-let imgSrc = ref();
-let encodeImgSrc = ref();
+import { formatFile, base64ToBlobUrl, encodeMessage, genarateImageFromBase64 } from '@/utils/index';
+import upload from '@/components/upload.vue';
+let encodeContent = ref('');
+let imgSrc = ref('');
+let encodeImgSrc = ref('');
 let password = ref('');
-let message = ref();
+let message = ref('');
+let file = ref({});
+// 获取节点
 const previewImg = ref(null);
 const canvas = ref(null);
+
 let ctx = ref();
 
 // 将文字加密到图片中
-const encodePic = () => {
+const encodePic = async () => {
   ctx.value = canvas.value.getContext('2d');
-  ctx.value.canvas.width = previewImg.value.width;
-  ctx.value.canvas.height = previewImg.value.height;
-  ctx.value.drawImage(previewImg.value, 0, 0);
+  let originPic = await genarateImageFromBase64(imgSrc.value);
+  ctx.value.canvas.width = originPic.width;
+  ctx.value.canvas.height = originPic.height;
+  ctx.value.drawImage(originPic, 0, 0);
   let imgData = ctx.value.getImageData(0, 0, ctx.value.canvas.width, ctx.value.canvas.height);
   // 将隐藏信息置入imgData
   encodeMessage(imgData.data, computedHash.value, computedMessage.value);
   ctx.value.putImageData(imgData, 0, 0);
   encodeImgSrc.value = canvas.value.toDataURL();
-};
-
-// 解密图片
-const decodePic = () => {
-  ctx.value = canvas.value.getContext('2d');
-  ctx.value.canvas.width = previewImg.value.width;
-  ctx.value.canvas.height = previewImg.value.height;
-  ctx.value.drawImage(previewImg.value, 0, 0);
-  let imgData = ctx.value.getImageData(0, 0, ctx.value.canvas.width, ctx.value.canvas.height);
-  let message = decodeMessage(imgData.data, computedHash.value);
-  console.log(message);
-  decodeContent.value = JSON.parse(message).text;
 };
 
 // 获取下载的blob链接
@@ -88,6 +117,15 @@ const computedHash = computed(() => {
   return window?.sjcl?.hash?.sha256.hash(password.value);
 });
 
+// 计算文件大小
+const computedFileSize = computed(() => {
+  if (file.value?.size) {
+    return formatFile(file.value.size);
+  } else {
+    return '';
+  }
+});
+
 const computedMessage = computed(() => {
   if (password.value?.length > 0) {
     message = window?.sjcl?.encrypt(password.value, encodeContent.value);
@@ -97,77 +135,115 @@ const computedMessage = computed(() => {
   return message;
 });
 
-// 获取上传的图片base64
-const previewFiles = async e => {
-  imgSrc.value = await getPreviewPic(e);
+const getUploadData = data => {
+  console.log(data);
+  file.value = data?.file;
+  imgSrc.value = data?.imgSrc;
+};
+
+const deleteFile = () => {
+  imgSrc.value = '';
+  file.value = {};
+  encodeImgSrc.value = '';
 };
 </script>
 
 <style lang="scss" scoped>
-.upload {
-  cursor: pointer;
-  width: 100%;
-  height: 180px;
-  position: relative;
-  input {
-    display: block;
-    opacity: 0;
+.top-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  .preview-wrapper {
+    box-sizing: border-box;
+    padding: 5px 10px;
     width: 100%;
-    height: 100%;
-    overflow: hidden;
+    height: 64px;
+    cursor: pointer;
+    .left-wrapper {
+      .img-wrapper {
+        width: 64px;
+        height: 48px;
+        border-radius: 4px;
+        overflow: hidden;
+        img {
+          object-fit: cover;
+          // object-position: center;
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .img-info {
+        p {
+          font-size: 12px;
+        }
+      }
+    }
+    .right-wrapper {
+      .operation-item {
+        display: inline-block;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        position: relative;
+        color: #b8b4b4;
+        svg {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          fill: #b8b4b4;
+        }
+        &:hover {
+          background-color: rgba(79, 85, 95, 0.5);
+          border-radius: 50%;
+        }
+      }
+    }
+    &:hover {
+      box-shadow: 0 5px 8px rgb(0 0 0 / 30%);
+    }
   }
-  label {
-    width: 100%;
-    height: 100%;
-    line-height: 180px;
-    position: absolute;
-    font-size: 14px;
-    text-align: center;
-    border: 1px dashed #4f555f;
-    border-radius: 12px;
+
+  .encode-message {
+    .content {
+      width: 100%;
+      height: 60px;
+      background-color: transparent;
+      outline: none;
+      border: 1px solid rgba(79, 85, 95, 0.1);
+      font-size: 12px;
+      padding: 10px;
+      resize: none;
+    }
+    .password {
+      width: 100%;
+      height: 32px;
+      background-color: transparent;
+      outline: none;
+      border: 1px solid rgba(79, 85, 95, 0.1);
+      font-size: 12px;
+      padding: 10px;
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(79, 85, 95, 0.7);
+    }
   }
 }
-.preview-wrapper {
-  box-sizing: border-box;
-  padding: 5px 10px;
+
+.btn-wrapper {
   width: 100%;
-  height: 64px;
-  cursor: pointer;
-  .left-wrapper {
-    .img-wrapper {
-      width: 64px;
-      height: 48px;
-      border-radius: 4px;
-      overflow: hidden;
-      img {
-        object-fit: cover;
-        object-position: center;
-        width: 100%;
-        height: 100%;
-      }
-    }
+  height: 40px;
+  border: 1px solid rgba(79, 85, 95, 0.3);
+  border-radius: 2px;
+  button {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: #b8b4b4;
   }
-  .right-wrapper {
-    .operation-item {
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
-      position: relative;
-      svg {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        fill: #b8b4b4;
-      }
-      &:hover {
-        background-color: rgba(79, 85, 95, 0.5);
-        border-radius: 50%;
-      }
-    }
-  }
-  &:hover {
-    box-shadow: 0 5px 8px rgb(0 0 0 / 30%);
-  }
+}
+.hide {
+  display: none;
 }
 </style>

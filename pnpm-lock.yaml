@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@babel/core': ^7.18.6
   '@babel/eslint-parser': ^7.18.2
+  '@kyvg/vue3-notification': ^2.4.1
   '@unocss/reset': ^0.43.0
   '@unocss/transformer-directives': ^0.45.21
   '@vitejs/plugin-vue': ^2.3.3
@@ -23,6 +24,7 @@ specifiers:
   vuex: ^4.0.0
 
 dependencies:
+  '@kyvg/vue3-notification': registry.npmmirror.com/@kyvg/vue3-notification/2.4.1_vue@3.2.37
   '@unocss/reset': registry.npmmirror.com/@unocss/reset/0.43.0
   vue: registry.npmmirror.com/vue/3.2.37
   vue-router: registry.npmmirror.com/vue-router/4.0.16_vue@3.2.37
@@ -432,6 +434,17 @@ packages:
       '@jridgewell/resolve-uri': registry.npmmirror.com/@jridgewell/resolve-uri/3.0.8
       '@jridgewell/sourcemap-codec': registry.npmmirror.com/@jridgewell/sourcemap-codec/1.4.14
     dev: true
+
+  registry.npmmirror.com/@kyvg/vue3-notification/2.4.1_vue@3.2.37:
+    resolution: {integrity: sha512-SYwnGsTTKJ2TwFQ60hgYHEvuhkLscrnqSGPvdFRRiOwUb1sULJAPl5s+h+EEjan24kbizBtsxLTPC1D1qLs1EA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@kyvg/vue3-notification/-/vue3-notification-2.4.1.tgz}
+    id: registry.npmmirror.com/@kyvg/vue3-notification/2.4.1
+    name: '@kyvg/vue3-notification'
+    version: 2.4.1
+    peerDependencies:
+      vue: ^3.0.0
+    dependencies:
+      vue: registry.npmmirror.com/vue/3.2.37
+    dev: false
 
   registry.npmmirror.com/@nodelib/fs.scandir/2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz}

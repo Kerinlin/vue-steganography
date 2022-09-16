@@ -2,8 +2,24 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 const routes = [
   {
     path: '/',
-    name: 'home',
+    redirect: '/steganography/encode',
+  },
+  {
+    path: '/steganography',
+    name: 'steganography',
     component: () => import('@/views/home/Home.vue'),
+    children: [
+      {
+        path: 'encode',
+        name: 'encode',
+        component: () => import('@/views/encode/index.vue'),
+      },
+      {
+        path: 'decode',
+        name: 'decode',
+        component: () => import('@/views/decode/index.vue'),
+      },
+    ],
   },
 ];
 

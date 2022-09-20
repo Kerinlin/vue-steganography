@@ -49,9 +49,9 @@ export function genarateImageFromBase64(imageData) {
  */
 export function formatFile(total, n = 1) {
   let format;
-  let len = total / 1000.0;
+  let len = total / 1000;
   if (len > 1000) {
-    return arguments.callee(len, ++n);
+    return formatFile(len, ++n);
   } else {
     switch (n) {
       case 1:
@@ -128,7 +128,7 @@ export function encodeMessage(colors, hash, message) {
   let pos = 0;
   while (pos < messageBits.length) {
     // set the next color value to the next bit
-    var loc = getNextLocation(history, hash, colors?.length);
+    let loc = getNextLocation(history, hash, colors?.length);
     colors[loc] = setBit(colors[loc], 0, messageBits[pos]);
 
     // set the alpha value in this pixel to 255

@@ -82,6 +82,7 @@
 import { ref, computed } from 'vue';
 import { formatFile, base64ToBlobUrl, encodeMessage, genarateImageFromBase64 } from '@/utils/index';
 import upload from '@/components/upload.vue';
+import { notify } from '@kyvg/vue3-notification';
 let encodeContent = ref('');
 let imgSrc = ref('');
 let encodeImgSrc = ref('');
@@ -102,6 +103,25 @@ const encodePic = async () => {
   ctx.value.canvas.height = originPic.height;
   ctx.value.drawImage(originPic, 0, 0);
   let imgData = ctx.value.getImageData(0, 0, ctx.value.canvas.width, ctx.value.canvas.height);
+  let pixelCount = ctx.value.canvas.width * ctx.value.canvas.height;
+  let maxLen = pixelCount * 4 * 0.75;
+
+  if ((encodeContent.value.length + 1) * 16 > maxLen) {
+    notify({
+      type: 'error',
+      title: '加密信息太长',
+      text: `加密信息超过图片可承载的最大信息长度，最大信息长度为${maxLen}字节`,
+    });
+    return;
+  }
+  if (encodeContent.value.length <= 0) {
+    notify({
+      type: 'error',
+      title: '请输入加密信息',
+    });
+    return;
+  }
+
   // 将隐藏信息置入imgData
   encodeMessage(imgData.data, computedHash.value, computedMessage.value);
   ctx.value.putImageData(imgData, 0, 0);

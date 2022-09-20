@@ -4,7 +4,7 @@
     <div v-if="imgSrc" class="preview-wrapper space-between mt-15">
       <div class="left-wrapper flex-start">
         <div class="img-wrapper mr-20">
-          <img ref="previewImg" :src="imgSrc" />
+          <img :src="imgSrc" />
         </div>
         <div class="img-info">
           <p class="name">{{ file.name }}</p>
@@ -50,28 +50,25 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { formatFile, decodeMessage, genarateImageFromBase64 } from '@/utils/index';
-import { notify } from '@kyvg/vue3-notification';
+// import { notify } from '@kyvg/vue3-notification';
 import upload from '@/components/upload.vue';
-let encodeContent = ref('');
 let decodeContent = ref('');
 let imgSrc = ref('');
 let encodeImgSrc = ref('');
 let password = ref('');
-let message = ref('');
 let file = ref({});
 // 获取节点
-const previewImg = ref(null);
 const canvas = ref(null);
 
 let ctx = ref();
 
-const startEncode = () => {
-  console.log('aaa');
-  notify({
-    title: 'Authorization',
-    text: 'You have been logged in!',
-  });
-};
+// const startEncode = () => {
+//   console.log('aaa');
+//   notify({
+//     title: 'Authorization',
+//     text: 'You have been logged in!',
+//   });
+// };
 
 // 解密图片
 const decodePic = async () => {
@@ -101,15 +98,6 @@ const computedFileSize = computed(() => {
   } else {
     return '';
   }
-});
-
-const computedMessage = computed(() => {
-  if (password.value?.length > 0) {
-    message = window?.sjcl?.encrypt(password.value, encodeContent.value);
-  } else {
-    message = JSON.stringify({ text: encodeContent.value });
-  }
-  return message;
 });
 
 const getUploadData = data => {
